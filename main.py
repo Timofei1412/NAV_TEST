@@ -3,12 +3,14 @@ import math
 import time
 pygame.init()
 # Создание окна
-width_window = 1200
+width_window = 1500
 height_window = 1000
+
+SIZE_OF_TRAJ = 100
 
 
 screen = pygame.display.set_mode((width_window, height_window))
-image = pygame.image.load('/home/tim/Desktop/Python/image.png')
+image = pygame.image.load('image.png')
 # Контроль FPS
 clock = pygame.time.Clock()
 FPS = 120
@@ -39,6 +41,7 @@ x_new = 0
 y_new = 0
 
 prev_loc = []
+prev_loc_ptr = -1
 
 tmr = time.time() * 1000
 # Игровой цикл
@@ -74,6 +77,9 @@ while running:
                      speed += 1
                 if event.key == pygame.K_s:
                      speed -= 1
+                if event.key == pygame.K_q:
+                     prev_loc = []
+                     prev_loc_ptr = -1
     if(angle >= 45):
          angle = 45 
     if(angle <= -45):
@@ -99,7 +105,7 @@ while running:
         
         x_new = x1 * math.cos(math.radians(90)) - y1 * math.sin(math.radians(90))
         y_new = x1 * math.sin(math.radians(90)) + y1 * math.cos(math.radians(90))
-        print(angle, " ", speed," ", Radius)
+        
 
         x += speed * math.cos(math.radians(heading))
         y += speed * math.sin(math.radians(heading))
@@ -119,8 +125,19 @@ while running:
     screen.blit(image_rot, (x - width_plane / 2 , y - height_plane / 2))
     #pygame.draw.rect(screen, (255, 255, 255), (x - width_plane / 2 , y - height_plane / 2, width_plane, height_plane),)
     for i in prev_loc:
-         pygame.draw.circle(screen, (55, 55, 55), (i[0], i[1]), 1)
-    prev_loc.append([x, y])
-  
+            pygame.draw.circle(screen, (55, 55, 55), (i[0], i[1]), 1)
+
+            
+    if(prev_loc_ptr == -1 and len(prev_loc) < SIZE_OF_TRAJ):
+        prev_loc.append((x, y))
+    elif(prev_loc_ptr == -1 and len(prev_loc) >= SIZE_OF_TRAJ):
+            prev_loc_ptr = 0
+
+    if(len(prev_loc) == SIZE_OF_TRAJ and prev_loc_ptr != -1) :
+            prev_loc[prev_loc_ptr] = (x, y)
+            prev_loc_ptr += 1
+    if(prev_loc_ptr == SIZE_OF_TRAJ):
+            prev_loc_ptr = 0
+    print(prev_loc_ptr)
     pygame.display.flip()
 pygame.quit()
