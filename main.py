@@ -45,6 +45,7 @@ prev_loc = []
 prev_loc_ptr = -1
 
 target_heading = 0
+target_angle = 0
 
 tmr = time.time() * 1000
 # Игровой цикл
@@ -72,22 +73,36 @@ while running:
                 y_point2 = pos[1]
 
         if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                     angle -= 1
-                if event.key == pygame.K_d:
-                     angle += 1
-                if event.key == pygame.K_w:
-                     speed += 1
-                if event.key == pygame.K_s:
-                     speed -= 1
-                if event.key == pygame.K_q:
-                     prev_loc = []
-                     prev_loc_ptr = -1
-                if event.key == pygame.K_r:
-                     target_heading += 10
-                if event.key == pygame.K_f:
-                     target_heading -= 10
-                target_heading %= 360
+            if event.key == pygame.K_a:
+                    target_angle -= 1
+            if event.key == pygame.K_d:
+                    target_angle += 1
+            if event.key == pygame.K_w:
+                    speed += 1
+            if event.key == pygame.K_s:
+                    speed -= 1
+            if event.key == pygame.K_q:
+                    prev_loc = []
+                    prev_loc_ptr = -1
+            if event.key == pygame.K_r:
+                    target_heading += 10
+            if event.key == pygame.K_f:
+                    target_heading -= 10
+            
+            if event.key == pygame.K_e:
+                angle = 0
+                target_angle = 0
+                speed = 1
+                x = 20
+                y = 20
+                heading = 0
+                prev_loc = []
+                prev_loc_ptr = -1
+        
+                    
+                     
+
+            target_heading %= 360
                 
     
     '''
@@ -97,7 +112,6 @@ while running:
     i += error * dt
     
     '''
-    
     if(angle >= 45):
          angle = 45 
     if(angle <= -45):
@@ -107,12 +121,25 @@ while running:
          speed = 30 
     if(speed <=  0):
          speed = 0 
+    
          
     if(angle != 0):
         Radius = (speed * speed) / (9.81 * math.tan(math.radians(angle)))
     else:
          Radius = 0
     if(time.time()*1000 - tmr >= 50):
+        
+        heading %= 360
+        error =  (target_heading - heading) % 360
+        pid_error = error * 0.007
+        target_angle += pid_error
+        print(heading, " ", angle," ", error, " ", pid_error)
+        
+        if(abs(target_angle-angle) > 0.1):
+             angle += min((target_angle-angle) * 0.25, 0.2)
+        else:
+             angle = target_angle
+             
         if(Radius != 0):
             heading += math.degrees(speed / Radius)
 
@@ -125,12 +152,6 @@ while running:
 
         x += speed * math.cos(math.radians(heading))
         y += speed * math.sin(math.radians(heading))
-
-     #    heading %= 360
-     #    error =  (target_heading - heading) % 360
-     #    pid_error = error * 0.007
-     #    angle += pid_error
-     #    print(heading, " ", target_heading," ", error, " ", pid_error)
 
         tmr = time.time() * 1000
 
